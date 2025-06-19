@@ -5,7 +5,7 @@ from mutagen.mp4 import MP4
 
 from PyQt6.QtCore import Qt, pyqtSignal
 from PyQt6.QtGui import QFont
-from PyQt6.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QWidget, QLabel, QDateEdit, QHBoxLayout, QPushButton, QFileDialog, QTextEdit, QCheckBox
+from PyQt6.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QWidget, QLabel, QDateEdit, QHBoxLayout, QPushButton, QFileDialog, QTextEdit, QCheckBox, QTabWidget
 
 
 class DragDropLabel(QLabel):
@@ -19,7 +19,7 @@ class DragDropLabel(QLabel):
         
         self.setAcceptDrops(True)
         self.setText("Drag and drop afile here or click to open a file")
-        self.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        # self.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.setStyleSheet("border: 2px dashed #aaa; padding: 20px;")
         self.setFixedHeight(300)
         
@@ -39,9 +39,10 @@ class DragDropLabel(QLabel):
             print("File dropped:", filepath)
             self.metadata = dict(MP4(filepath)) if filepath else {}
             print("Metadata:", self.metadata)
+            self.setWindowTitle("Editing file: " + filepath)
             self.fileDropped.emit(self.metadata)
         
-        self.setWindowTitle("Editing file: " + filepath)
+        
             
     
     # open file dialog when widget is clicked        
@@ -62,6 +63,7 @@ class DragDropLabel(QLabel):
     def get_metadata(self):
         return self.metadata
 
+        
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -87,11 +89,12 @@ class MainWindow(QMainWindow):
         self.title_label.setText("Title: ")
         
         self.title_input = QTextEdit(self)
+        self.title_input.setAcceptRichText(True)
         self.title_input.setPlaceholderText(metadata['\xa9nam'][0] if '\xa9nam' in metadata else "")
         self.title_input.setFixedHeight(100)
         self.title_input.setFixedWidth(350)
         self.title_input.setMinimumWidth(700)
-        self.title_input.setFont(QFont("Times", 12))
+        self.title_input.setFont(QFont("Segoe UI Emoji", 12))
         # allow tabbing out when widget is focused
         self.title_input.setTabChangesFocus(True)
         
@@ -106,11 +109,12 @@ class MainWindow(QMainWindow):
         self.description_label.setText("Description: ")
         
         self.description_input = QTextEdit(self)
+        self.description_input.setFont(QFont("Segoe UI Emoji", 12))
+        self.description_input.setAcceptRichText(True)
         self.description_input.setPlaceholderText(metadata['desc'][0] if 'desc' in metadata else "")
         self.description_input.setFixedHeight(100)
         self.description_input.setFixedWidth(350)
         self.description_input.setMinimumWidth(620)
-        self.description_input.setFont(QFont("Times", 12))
         # allow tabbing out when widget is focused
         self.description_input.setTabChangesFocus(True)
         
@@ -125,11 +129,12 @@ class MainWindow(QMainWindow):
         self.comment_label.setText("Comment: ")
         
         self.comment_input = QTextEdit(self)
+        self.comment_input.setFont(QFont("Segoe UI Emoji", 12))
+        self.comment_input.setAcceptRichText(True)
         self.comment_input.setPlaceholderText(metadata['\xa9cmt'][0] if '\xa9cmt' in metadata else "")
         self.comment_input.setFixedHeight(100)
         self.comment_input.setFixedWidth(350)
         self.comment_input.setMinimumWidth(620)
-        self.comment_input.setFont(QFont("Times", 12))
         # allow tabbing out when widget is focused
         self.comment_input.setTabChangesFocus(True)
         
@@ -153,8 +158,14 @@ class MainWindow(QMainWindow):
         self.date_input.setDate(date)
         
         self.clear_date = QCheckBox("Clear Date")
+        self.clear_date.setToolTip("Check this box to clear the date field when saving")
         self.clear_date.setChecked(False)
         self.clear_date.setFont(QFont("Times", 8))
+        
+        self.ignore_date = QCheckBox("Ignore Date")
+        self.ignore_date.setToolTip("Check this box to ignore the date field when saving")
+        self.ignore_date.setChecked(False)
+        self.ignore_date.setFont(QFont("Times", 8))
         
         
         # self.date_force_button = QCheckBox("Force Overwrite Date")
@@ -171,6 +182,7 @@ class MainWindow(QMainWindow):
         # date_layout.addWidget(self.date_force_button, alignment=Qt.AlignmentFlag.AlignLeft)
         date_layout.setAlignment(Qt.AlignmentFlag.AlignLeft)
         date_layout.addWidget(self.clear_date, alignment=Qt.AlignmentFlag.AlignLeft)
+        date_layout.addWidget(self.ignore_date, alignment=Qt.AlignmentFlag.AlignLeft)
         
         
         # Create the save button
@@ -206,8 +218,16 @@ class MainWindow(QMainWindow):
         container = QWidget()
         container.setLayout(layout)
         
+
+        self.tabs = QTabWidget()
+        self.tabs.addTab(container, "Edit Single File")
+        self.tabs.addTab(EditMultipleWindow(), "Edit Multiple Files")
+        self.tabs.addTab(CopyWindow(), "Copy to")
+        
+        
         # Set the central widget of the Window.
-        self.setCentralWidget(container)
+        self.setCentralWidget(self.tabs)
+
         
         # allow tabbing between the widgets
         container.setTabOrder(self.title_input, self.description_input) 
@@ -279,7 +299,7 @@ class MainWindow(QMainWindow):
             v['\xa9cmt'] = self.comment_input.toPlainText()
         if self.clear_date.isChecked():
             del v['\xa9day']
-        if self.date_input.text() and not self.clear_date.isChecked():
+        if self.date_input.text() and not self.ignore_date.isChecked():
             v['\xa9day'] = self.date_input.date().toString("yyyy-MM-dd")
             
         # save the updated metadata
@@ -290,6 +310,22 @@ class MainWindow(QMainWindow):
         
         except Exception as e:
             print(f"Error saving metadata: {e}")
+
+
+class CopyWindow(QWidget):
+    def __init__(self):
+        super().__init__()
+        pass
+
+
+class EditMultipleWindow(QWidget):
+    def __init__(self):
+        super().__init__()
+        
+        page_layout = QVBoxLayout(self)
+        self.file_dialog = DragDropLabel(self)
+        page_layout.addWidget(self.file_dialog, alignment=Qt.AlignmentFlag.AlignTop)
+        page_layout.addWidget(MainWindow())
 
 
 app = QApplication(sys.argv)
