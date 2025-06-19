@@ -1,0 +1,6 @@
+venv
+build
+dist
+demo*
+q*.py
+*.bak
