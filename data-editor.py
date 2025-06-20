@@ -18,8 +18,8 @@ class DragDropLabel(QLabel):
         self.metadata = {}
         
         self.setAcceptDrops(True)
-        self.setText("Drag and drop afile here or click to open a file")
-        # self.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.setText("Drag and drop a file here or click to open a file")
+        self.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.setStyleSheet("border: 2px dashed #aaa; padding: 20px;")
         self.setFixedHeight(300)
         
@@ -65,7 +65,7 @@ class DragDropLabel(QLabel):
 
         
 
-class MainWindow(QMainWindow):
+class EditSingleWindow(QWidget):
     def __init__(self):
         super().__init__()
         
@@ -74,14 +74,10 @@ class MainWindow(QMainWindow):
         self.comment = ""
         self.date = "" 
         
-        self.setWindowTitle("Metadata Editor")
-        self.setFixedWidth(800)
-        
         self.file_dialog = DragDropLabel()
         self.file_dialog.fileDropped.connect(self.update_metadata)
         metadata = self.file_dialog.get_metadata()
         
-        self.setGeometry(500, 500, 800, 600)
         
         # Create a label and input field for the title
         self.title_label = QLabel()
@@ -91,8 +87,6 @@ class MainWindow(QMainWindow):
         self.title_input = QTextEdit(self)
         self.title_input.setAcceptRichText(True)
         self.title_input.setPlaceholderText(metadata['\xa9nam'][0] if '\xa9nam' in metadata else "")
-        self.title_input.setFixedHeight(100)
-        self.title_input.setFixedWidth(350)
         self.title_input.setMinimumWidth(700)
         self.title_input.setFont(QFont("Segoe UI Emoji", 12))
         # allow tabbing out when widget is focused
@@ -112,8 +106,6 @@ class MainWindow(QMainWindow):
         self.description_input.setFont(QFont("Segoe UI Emoji", 12))
         self.description_input.setAcceptRichText(True)
         self.description_input.setPlaceholderText(metadata['desc'][0] if 'desc' in metadata else "")
-        self.description_input.setFixedHeight(100)
-        self.description_input.setFixedWidth(350)
         self.description_input.setMinimumWidth(620)
         # allow tabbing out when widget is focused
         self.description_input.setTabChangesFocus(True)
@@ -132,8 +124,6 @@ class MainWindow(QMainWindow):
         self.comment_input.setFont(QFont("Segoe UI Emoji", 12))
         self.comment_input.setAcceptRichText(True)
         self.comment_input.setPlaceholderText(metadata['\xa9cmt'][0] if '\xa9cmt' in metadata else "")
-        self.comment_input.setFixedHeight(100)
-        self.comment_input.setFixedWidth(350)
         self.comment_input.setMinimumWidth(620)
         # allow tabbing out when widget is focused
         self.comment_input.setTabChangesFocus(True)
@@ -153,7 +143,7 @@ class MainWindow(QMainWindow):
         self.date_input.setCalendarPopup(True)
         self.date_input.setFixedHeight(40)
         self.date_input.setFixedWidth(150)
-        # self.date_input.setAlignment(Qt.AlignmentFlag.AlignLeft)
+        self.date_input.setAlignment(Qt.AlignmentFlag.AlignLeft)
         date = datetime.strptime(self.date, "%Y-%m-%d") if self.date else datetime.now()
         self.date_input.setDate(date)
         
@@ -166,11 +156,6 @@ class MainWindow(QMainWindow):
         self.ignore_date.setToolTip("Check this box to ignore the date field when saving")
         self.ignore_date.setChecked(False)
         self.ignore_date.setFont(QFont("Times", 8))
-        
-        
-        # self.date_force_button = QCheckBox("Force Overwrite Date")
-        # self.date_force_button.setChecked(False)
-        # self.date_force_button.setFont(QFont("Times", 10))
         
         
         # create the date layout
@@ -187,21 +172,21 @@ class MainWindow(QMainWindow):
         
         # Create the save button
         self.save_button = QPushButton("Save", self)
-        self.save_button.setFixedHeight(40)
-        self.save_button.setFixedWidth(100)
+        self.save_button.setFont(QFont("Segoe UI Emoji", 12))
         self.save_button.clicked.connect(self.save_metadata)
         
         # create clear all button
         self.clear_all_button = QPushButton("Clear All", self)
-        self.clear_all_button.setFixedHeight(40)
-        self.clear_all_button.setFixedWidth(100)
+        self.clear_all_button.setFont(QFont("Segoe UI Emoji", 12))
         self.clear_all_button.clicked.connect(self.clear_all)
         
         # create the save button layout
         button_row = QHBoxLayout()
         button_row.addWidget(self.save_button)
         button_row.addWidget(self.clear_all_button)
-        button_row.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        button_row.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignCenter)
+        button_row.setContentsMargins(0, 0, 0, 0)
+        button_row.setSpacing(20)
         
         
         # Create the main layout of the window
@@ -216,17 +201,7 @@ class MainWindow(QMainWindow):
         
         
         container = QWidget()
-        container.setLayout(layout)
-        
-
-        self.tabs = QTabWidget()
-        self.tabs.addTab(container, "Edit Single File")
-        self.tabs.addTab(EditMultipleWindow(), "Edit Multiple Files")
-        self.tabs.addTab(CopyWindow(), "Copy to")
-        
-        
-        # Set the central widget of the Window.
-        self.setCentralWidget(self.tabs)
+        self.setLayout(layout)
 
         
         # allow tabbing between the widgets
@@ -323,9 +298,23 @@ class EditMultipleWindow(QWidget):
         super().__init__()
         
         page_layout = QVBoxLayout(self)
-        self.file_dialog = DragDropLabel(self)
-        page_layout.addWidget(self.file_dialog, alignment=Qt.AlignmentFlag.AlignTop)
-        page_layout.addWidget(MainWindow())
+        page_layout.addWidget(EditSingleWindow())
+
+
+class MainWindow(QMainWindow):
+    def __init__(self):
+        super().__init__()
+        
+        self.setWindowTitle("Data Editor")
+        self.setGeometry(100, 100, 600, 400)
+        self.setMinimumSize(800, 800)
+        
+        self.tabs = QTabWidget()
+        self.tabs.addTab(EditSingleWindow(), "Edit Single File")
+        self.tabs.addTab(EditMultipleWindow(), "Edit Multiple Files")
+        self.tabs.addTab(CopyWindow(), "Copy to")
+        
+        self.setCentralWidget(self.tabs)
 
 
 app = QApplication(sys.argv)
