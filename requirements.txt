@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 altgraph==0.17.4
 mutagen==1.47.0
 packaging==25.0
@@ -8,3 +9,15 @@ PyQt6==6.9.0
 PyQt6-Qt6==6.9.0
 PyQt6_sip==13.10.0
 pywin32-ctypes==0.2.3
+=======
+altgraph==0.17.4
+mutagen==1.47.0
+packaging==25.0
+pefile==2023.2.7
+pyinstaller==6.13.0
+pyinstaller-hooks-contrib==2025.3
+PyQt6==6.9.0
+PyQt6-Qt6==6.9.0
+PyQt6_sip==13.10.0
+pywin32-ctypes==0.2.3
+>>>>>>> origin/main

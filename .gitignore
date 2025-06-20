@@ -1,6 +1,14 @@
+<<<<<<< HEAD
 venv
 build
 dist
 demo*
 q*.py
+=======
+venv
+build
+dist
+demo*
+q*.py
+>>>>>>> origin/main
 *.bak
