@@ -6,6 +6,7 @@ from mutagen.mp4 import MP4
 from PyQt6.QtCore import Qt, pyqtSignal
 from PyQt6.QtGui import QFont
 from PyQt6.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QWidget, QLabel, QDateEdit, QHBoxLayout, QPushButton, QFileDialog, QTextEdit, QCheckBox, QTabWidget
+from CustomTextEdit import CustomTextEdit
 
 
 class DragDropLabel(QLabel):
@@ -84,7 +85,7 @@ class EditSingleWindow(QWidget):
         self.title_label.setFont(QFont("Times", 20))
         self.title_label.setText("Title: ")
         
-        self.title_input = QTextEdit(self)
+        self.title_input = CustomTextEdit(self)
         self.title_input.setAcceptRichText(True)
         self.title_input.setPlaceholderText(metadata['\xa9nam'][0] if '\xa9nam' in metadata else "")
         self.title_input.setMinimumWidth(700)
@@ -102,7 +103,7 @@ class EditSingleWindow(QWidget):
         self.description_label.setFont(QFont("Times", 20))
         self.description_label.setText("Description: ")
         
-        self.description_input = QTextEdit(self)
+        self.description_input = CustomTextEdit(self)
         self.description_input.setFont(QFont("Segoe UI Emoji", 12))
         self.description_input.setAcceptRichText(True)
         self.description_input.setPlaceholderText(metadata['desc'][0] if 'desc' in metadata else "")
@@ -120,7 +121,7 @@ class EditSingleWindow(QWidget):
         self.comment_label.setFont(QFont("Times", 20))
         self.comment_label.setText("Comment: ")
         
-        self.comment_input = QTextEdit(self)
+        self.comment_input = CustomTextEdit(self)
         self.comment_input.setFont(QFont("Segoe UI Emoji", 12))
         self.comment_input.setAcceptRichText(True)
         self.comment_input.setPlaceholderText(metadata['\xa9cmt'][0] if '\xa9cmt' in metadata else "")
